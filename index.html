@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Balance Flow — MFT Challenge Disc 2.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html, body { height: 100%; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+  body { font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif; }
+  canvas { touch-action: none; display: block; }
+  .glass { background: rgba(255,255,255,0.74); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  @keyframes softpulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.03);} }
+  .pulse { animation: softpulse 2.4s ease-in-out infinite; }
+  input[type=range]{ -webkit-appearance:none; height:6px; border-radius:9999px; background:#cbd5e1; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:9999px; background:#0d9488; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25); }
+  .scrollbar-thin::-webkit-scrollbar{ width:6px; height:6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb{ background:#94a3b8; border-radius:9999px; }
+  .modechip.active{ background:#0d9488; color:#fff; box-shadow:0 4px 12px rgba(13,148,136,.35); }
+  @media print {
+    body * { visibility: hidden; }
+    #report, #report * { visibility: visible; }
+    #report { position: absolute; inset: 0; width: 100%; box-shadow: none; background: #fff; }
+    #report .noprint { display: none !important; }
+  }
+</style>
+</head>
+<body class="bg-gradient-to-b from-sky-100 via-teal-50 to-emerald-50 text-slate-700 select-none">
+
+<!-- ===================================================================== -->
+<header class="glass sticky top-0 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-sky-400 grid place-items-center text-white text-xl shadow">🎈</div>
+    <div>
+      <h1 class="font-bold text-lg leading-tight text-slate-800">Balance&nbsp;Flow</h1>
+      <p class="text-xs text-slate-500 leading-tight">MFT Challenge Disc 2.0 · Physio-Edition</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <span id="statusDot" class="w-3 h-3 rounded-full bg-slate-300 transition-colors"></span>
+    <span id="statusText" class="text-sm font-medium text-slate-500">Getrennt</span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto p-4 grid gap-4">
+
+  <!-- STEUER-LEISTE -->
+  <section class="glass rounded-3xl p-4 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="btnConnect" class="pulse px-5 py-3 rounded-2xl bg-teal-500 hover:bg-teal-600 active:scale-95 transition text-white font-semibold shadow-md flex items-center gap-2"><span>🔗</span> Disc verbinden</button>
+      <button id="btnDemo" class="px-5 py-3 rounded-2xl bg-violet-400 hover:bg-violet-500 active:scale-95 transition text-white font-semibold shadow-md flex items-center gap-2" title="Ohne Hardware testen"><span>🧪</span> Demo-Modus</button>
+      <button id="btnCalibrate" disabled class="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition text-white font-semibold shadow-md flex items-center gap-2"><span>🎯</span> Kalibrieren</button>
+      <button id="btnPlay" disabled class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition text-white font-semibold shadow-md flex items-center gap-2"><span>▶️</span> Sitzung starten</button>
+      <button id="btnReport" class="px-4 py-3 rounded-2xl bg-sky-100 hover:bg-sky-200 text-sky-700 font-medium shadow-sm flex items-center gap-2"><span>📊</span> Berichte</button>
+      <button id="btnDebug" class="ml-auto px-4 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 transition text-slate-700 font-medium shadow-sm flex items-center gap-2"><span>🛠️</span> Debug</button>
+    </div>
+
+    <!-- MODUS-AUSWAHL -->
+    <div class="mt-4">
+      <div class="text-xs font-semibold text-slate-500 mb-2">Übungsmodus</div>
+      <div class="flex flex-wrap gap-2" id="modeBar">
+        <button data-mode="free"  class="modechip active px-4 py-2 rounded-xl bg-white text-slate-600 text-sm font-medium shadow-sm transition">🎈 Freies Spiel</button>
+        <button data-mode="static" class="modechip px-4 py-2 rounded-xl bg-white text-slate-600 text-sm font-medium shadow-sm transition">🧘 Statische Balance</button>
+        <button data-mode="shift"  class="modechip px-4 py-2 rounded-xl bg-white text-slate-600 text-sm font-medium shadow-sm transition">↔️ Gewichtsverlagerung</button>
+        <button data-mode="dual"   class="modechip px-4 py-2 rounded-xl bg-white text-slate-600 text-sm font-medium shadow-sm transition">🧠 Dual-Task</button>
+      </div>
+      <p id="modeDesc" class="text-xs text-slate-500 mt-2">Sanftes Sammelspiel — frei lenken, Sterne fangen, Mitte halten.</p>
+    </div>
+
+    <!-- REGLER -->
+    <div class="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-slate-200/70 pt-3">
+      <label class="flex items-center gap-3 text-sm"><span class="text-slate-600 w-28">Dämpfung</span><input id="smoothRange" type="range" min="1" max="30" value="8" class="w-40" /><span id="smoothVal" class="mono text-teal-600 w-8 text-right">8</span></label>
+      <label class="flex items-center gap-3 text-sm"><span class="text-slate-600 w-28">Empfindlichkeit</span><input id="sensRange" type="range" min="1" max="40" value="16" class="w-40" /><span id="sensVal" class="mono text-teal-600 w-8 text-right">16</span></label>
+      <label class="flex items-center gap-2 text-sm cursor-pointer"><input id="invertX" type="checkbox" class="w-4 h-4 accent-teal-500" /> <span class="text-slate-600">X spiegeln</span></label>
+      <label class="flex items-center gap-2 text-sm cursor-pointer"><input id="invertY" type="checkbox" class="w-4 h-4 accent-teal-500" /> <span class="text-slate-600">Y spiegeln</span></label>
+      <label class="flex items-center gap-2 text-sm cursor-pointer"><input id="safetyOn" type="checkbox" checked class="w-4 h-4 accent-rose-500" /> <span class="text-slate-600">Beruhigungs-Hilfe</span></label>
+    </div>
+  </section>
+
+  <!-- SPIEL-CANVAS -->
+  <section class="relative rounded-3xl overflow-hidden shadow-lg bg-slate-900">
+    <canvas id="game" class="w-full" style="aspect-ratio: 16/10;"></canvas>
+
+    <!-- HUD -->
+    <div class="absolute top-3 left-3 glass rounded-2xl px-4 py-2 text-sm shadow flex gap-5">
+      <div><div class="text-[10px] uppercase tracking-wide text-slate-400">Punkte</div><div id="hudScore" class="font-bold text-lg text-slate-800 mono">0</div></div>
+      <div><div class="text-[10px] uppercase tracking-wide text-slate-400">Balance</div><div id="hudBalance" class="font-bold text-lg text-emerald-600 mono">0s</div></div>
+      <div><div class="text-[10px] uppercase tracking-wide text-slate-400">Zeit</div><div id="hudTime" class="font-bold text-lg text-sky-600 mono">0:00</div></div>
+    </div>
+
+    <!-- Balance-Ring -->
+    <div class="absolute top-3 right-3 glass rounded-2xl px-3 py-2 shadow flex items-center gap-2">
+      <div class="text-[10px] uppercase tracking-wide text-slate-400 leading-tight text-right">Mitte<br/>halten</div>
+      <div class="relative w-10 h-10">
+        <svg viewBox="0 0 36 36" class="w-10 h-10 -rotate-90">
+          <circle cx="18" cy="18" r="15" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+          <circle id="balanceRing" cx="18" cy="18" r="15" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-dasharray="94" stroke-dashoffset="94"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Dual-Task Overlay -->
+    <div id="dualBox" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 glass rounded-2xl px-5 py-3 shadow-lg text-center">
+      <div class="text-xs text-slate-500 mb-1">Rechne nebenbei:</div>
+      <div id="dualQ" class="font-bold text-2xl text-slate-800 mb-2 mono">3 + 4</div>
+      <div id="dualOpts" class="flex gap-2 justify-center"></div>
+    </div>
+
+    <!-- Beruhigungs-Banner -->
+    <div id="calmBanner" class="hidden absolute bottom-3 left-3 right-3 mx-auto max-w-sm glass rounded-2xl px-4 py-2 shadow text-center text-sm text-rose-600 font-medium">🌬️ Ruhig atmen — langsame, kontrollierte Bewegungen.</div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="absolute inset-0 grid place-items-center bg-slate-900/55 text-center px-6">
+      <div class="max-w-md">
+        <div class="text-6xl mb-3">🎈</div>
+        <h2 class="text-white text-2xl font-bold mb-2">Balance Flow</h2>
+        <p class="text-slate-200 text-sm leading-relaxed mb-4">Lenke den Ballon mit <b>sanftem</b> Kippen der Disc. Links/Rechts steuert die Seite, Vorne/Hinten die Höhe. Wähle einen Übungsmodus oben und starte die Sitzung.</p>
+        <p id="overlayHint" class="text-teal-300 text-sm font-medium">Verbinde zuerst die Disc — oder starte den Demo-Modus.</p>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div id="countdown" class="hidden absolute inset-0 grid place-items-center bg-slate-900/70 text-center">
+      <div>
+        <div class="text-white text-lg mb-2">🎯 Kalibrierung — ruhig in der Mitte stehen</div>
+        <div id="countNum" class="text-white text-7xl font-bold">3</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE-AUSWERTUNG (Asymmetrie + ROM + Stabilität) -->
+  <section class="glass rounded-3xl p-4 shadow-sm">
+    <h3 class="font-semibold text-slate-700 text-sm mb-3">Live-Auswertung</h3>
+    <div class="grid sm:grid-cols-3 gap-4">
+
+      <!-- Neigung -->
+      <div>
+        <div class="text-xs text-slate-500 mb-1">Neigung (kalibriert)</div>
+        <div class="flex justify-between text-[11px]"><span>Links</span><span class="mono" id="axLabel">0</span><span>Rechts</span></div>
+        <div class="h-3 bg-slate-200 rounded-full relative overflow-hidden mb-2">
+          <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-400"></div>
+          <div id="axBar" class="absolute top-0 bottom-0 bg-teal-400 rounded-full" style="left:50%; width:2px;"></div>
+        </div>
+        <div class="flex justify-between text-[11px]"><span>Hinten</span><span class="mono" id="ayLabel">0</span><span>Vorne</span></div>
+        <div class="h-3 bg-slate-200 rounded-full relative overflow-hidden">
+          <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-400"></div>
+          <div id="ayBar" class="absolute top-0 bottom-0 bg-sky-400 rounded-full" style="left:50%; width:2px;"></div>
+        </div>
+      </div>
+
+      <!-- Asymmetrie -->
+      <div>
+        <div class="text-xs text-slate-500 mb-1">Asymmetrie (Zeit pro Seite)</div>
+        <div class="text-[11px] flex justify-between"><span>Links <b id="asymL" class="text-teal-600">50%</b></span><span><b id="asymR" class="text-teal-600">50%</b> Rechts</span></div>
+        <div class="h-3 rounded-full overflow-hidden flex bg-slate-200 mb-2">
+          <div id="asymLBar" class="bg-teal-400 h-full" style="width:50%"></div>
+          <div id="asymRBar" class="bg-sky-400 h-full" style="width:50%"></div>
+        </div>
+        <div class="text-[11px] flex justify-between"><span>Hinten <b id="asymB" class="text-teal-600">50%</b></span><span><b id="asymF" class="text-teal-600">50%</b> Vorne</span></div>
+        <div class="h-3 rounded-full overflow-hidden flex bg-slate-200">
+          <div id="asymBBar" class="bg-teal-400 h-full" style="width:50%"></div>
+          <div id="asymFBar" class="bg-sky-400 h-full" style="width:50%"></div>
+        </div>
+      </div>
+
+      <!-- ROM + Stabilität -->
+      <div>
+        <div class="text-xs text-slate-500 mb-1">Bewegungsumfang (ROM) &amp; Stabilität</div>
+        <div class="grid grid-cols-2 gap-1 text-[11px] mb-2">
+          <div class="bg-white rounded-lg px-2 py-1 flex justify-between"><span>◀ L</span><span class="mono" id="romL">0%</span></div>
+          <div class="bg-white rounded-lg px-2 py-1 flex justify-between"><span>R ▶</span><span class="mono" id="romR">0%</span></div>
+          <div class="bg-white rounded-lg px-2 py-1 flex justify-between"><span>▲ V</span><span class="mono" id="romF">0%</span></div>
+          <div class="bg-white rounded-lg px-2 py-1 flex justify-between"><span>H ▼</span><span class="mono" id="romB">0%</span></div>
+        </div>
+        <div class="bg-white rounded-lg px-2 py-1 text-[11px] flex justify-between"><span>Stabilität</span><span class="mono"><b id="stabIdx" class="text-emerald-600">–</b></span></div>
+        <div class="text-[10px] text-slate-400 mt-1">100 % = sehr ruhig. Adaptive Ziele: <span id="romTargetTxt" class="mono">–</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===================================================================== -->
+<!-- DEBUG / GATT-EXPLORER -->
+<aside id="debugPanel" class="fixed top-0 right-0 h-full w-full sm:w-[420px] glass shadow-2xl translate-x-full transition-transform duration-300 z-40 flex flex-col">
+  <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+    <h2 class="font-bold text-slate-800 flex items-center gap-2">🛠️ GATT-Explorer &amp; Debug</h2>
+    <button id="btnDebugClose" class="w-9 h-9 rounded-xl bg-slate-200 hover:bg-slate-300 grid place-items-center">✕</button>
+  </div>
+  <div class="p-4 overflow-y-auto scrollbar-thin grow text-sm space-y-4">
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-800 text-xs leading-relaxed"><b>UUIDs unbekannt?</b> Klicke auf "Alle Services scannen", kippe die Disc und beobachte das Log. Die Characteristic, deren Bytes sich ändern, ist die Datenquelle — per "Nutzen" auswählen oder oben im Code unter CONFIG eintragen.</div>
+    <div class="flex flex-wrap gap-2">
+      <button id="btnScanAll" class="px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold">📡 Alle Services scannen</button>
+      <button id="btnSubscribeAll" class="px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold">🔔 Notifications abonnieren</button>
+      <button id="btnClearLog" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold">🧹 Log leeren</button>
+    </div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Aktive Datenquelle</div><div id="activeSource" class="mono text-xs bg-white rounded-xl p-2 border border-slate-200 break-all text-slate-600">— (CONFIG)</div></div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Entdeckte Services / Characteristics</div><div id="gattTree" class="space-y-1 text-xs"></div></div>
+    <div>
+      <div class="flex items-center justify-between mb-1"><div class="text-xs font-semibold text-slate-500">Raw-Daten-Log</div><label class="text-[10px] flex items-center gap-1 text-slate-500"><input id="logHex" type="checkbox" checked class="accent-teal-500"/> Hex</label></div>
+      <div id="rawLog" class="mono text-[11px] bg-slate-900 text-emerald-300 rounded-xl p-2 h-56 overflow-y-auto scrollbar-thin leading-relaxed"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- REPORT / VERLAUF MODAL -->
+<div id="reportWrap" class="hidden fixed inset-0 z-40 grid place-items-center p-4 bg-black/40">
+  <div id="report" class="glass rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-thin p-6 bg-white/90">
+    <div class="flex items-center justify-between mb-4 noprint">
+      <h2 class="font-bold text-xl text-slate-800">📊 Sitzungsbericht &amp; Verlauf</h2>
+      <button id="btnReportClose" class="w-9 h-9 rounded-xl bg-slate-200 hover:bg-slate-300 grid place-items-center">✕</button>
+    </div>
+    <div id="reportBody"></div>
+    <div class="flex flex-wrap gap-2 mt-5 noprint">
+      <button id="btnExportCsv" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold">⬇️ CSV exportieren</button>
+      <button id="btnPrint" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold">🖨️ Bericht drucken / PDF</button>
+      <button id="btnClearHist" class="px-4 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-600 text-sm font-semibold ml-auto">Verlauf löschen</button>
+    </div>
+  </div>
+</div>
+
+<div id="debugBackdrop" class="fixed inset-0 bg-black/30 z-30 hidden"></div>
+
+<!-- ===================================================================== -->
+<script>
+"use strict";
+
+/* =======================================================================
+   1. KONFIGURATION — UUIDs HIER EINTRAGEN
+   ===================================================================== */
+const CONFIG = {
+  SERVICE_UUID: "",             // z.B. "0000fff0-0000-1000-8000-00805f9b34fb"
+  DATA_CHARACTERISTIC_UUID: "", // z.B. "0000fff1-0000-1000-8000-00805f9b34fb"
+  OPTIONAL_SERVICES: [
+    0xfff0, 0xffe0, 0xfe40, 0x1801, 0x1800, 0x180a, 0x180f,
+    "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
+    "0000fff0-0000-1000-8000-00805f9b34fb",
+    "0000ffe0-0000-1000-8000-00805f9b34fb"
+  ],
+  PARSE_MODE: "auto"            // "auto" | "int8" | "int16le" | "uint8"
+};
+
+const STORAGE_KEY = "balanceflow_sessions_v1";
+const DEADZONE = 0.12;          // Schwelle "Mitte" für Asymmetrie-Zählung
+
+/* =======================================================================
+   2. ZUSTAND
+   ===================================================================== */
+const state = {
+  device:null, server:null, notifyChars:[], activeChar:null,
+  rawX:0, rawY:0, zeroX:0, zeroY:0,
+  bufX:[], bufY:[], smoothX:0, smoothY:0,
+  velMag:0, prevX:0, prevY:0,
+  connected:false, demo:false, playing:false,
+  smoothing:8, sensitivity:16, invertX:false, invertY:false, safety:true,
+  mode:"free"
+};
+
+/* Sitzungs-Statistik (wird live während einer Sitzung gefüllt) */
+let session = freshSession();
+function freshSession(){
+  return {
+    mode:"free", start:0, elapsed:0,
+    sampleN:0, tiltSum:0,
+    holdTime:0, centerHold:0,
+    timeL:0, timeR:0, timeF:0, timeB:0,
+    romL:0, romR:0, romF:0, romB:0,
+    score:0, heal:0, hazards:0,
+    dualCorrect:0, dualTotal:0,
+    staticRound:0,
+    velWindow:[]
+  };
+}
+
+/* =======================================================================
+   3. DOM
+   ===================================================================== */
+const $ = (id)=>document.getElementById(id);
+const statusDot=$("statusDot"), statusText=$("statusText");
+const btnConnect=$("btnConnect"), btnCalibrate=$("btnCalibrate"), btnPlay=$("btnPlay"), btnDemo=$("btnDemo");
+const overlay=$("overlay"), overlayHint=$("overlayHint");
+const rawLog=$("rawLog"), gattTree=$("gattTree"), activeSource=$("activeSource");
+
+/* =======================================================================
+   4. HILFSFUNKTIONEN
+   ===================================================================== */
+function log(msg, cls=""){
+  const t=new Date().toLocaleTimeString();
+  const line=document.createElement("div"); line.className=cls; line.textContent="["+t+"] "+msg;
+  rawLog.appendChild(line); rawLog.scrollTop=rawLog.scrollHeight;
+  while(rawLog.childNodes.length>400) rawLog.removeChild(rawLog.firstChild);
+}
+function bytesToHex(dv){ let s=[]; for(let i=0;i<dv.byteLength;i++) s.push(dv.getUint8(i).toString(16).padStart(2,"0")); return s.join(" "); }
+function bytesToDec(dv){ let s=[]; for(let i=0;i<dv.byteLength;i++) s.push(dv.getUint8(i)); return s.join(" "); }
+function fmtTime(s){ const m=Math.floor(s/60), ss=Math.floor(s%60); return m+":"+String(ss).padStart(2,"0"); }
+function setStatus(kind){
+  const map={ off:["bg-slate-300","Getrennt","text-slate-500"], on:["bg-emerald-400","Verbunden","text-emerald-600"],
+    scan:["bg-sky-400","Suche…","text-sky-600"], demo:["bg-violet-400","Demo-Modus","text-violet-600"], error:["bg-rose-400","Fehler","text-rose-600"] };
+  const [dot,txt,col]=map[kind];
+  statusDot.className="w-3 h-3 rounded-full transition-colors "+dot;
+  statusText.textContent=txt; statusText.className="text-sm font-medium "+col;
+}
+function flash(msg){
+  const el=document.createElement("div");
+  el.className="fixed left-1/2 -translate-x-1/2 bottom-8 z-50 glass px-5 py-3 rounded-2xl shadow-lg text-slate-800 font-medium";
+  el.textContent=msg; document.body.appendChild(el);
+  setTimeout(()=>{ el.style.transition="opacity .4s"; el.style.opacity="0"; setTimeout(()=>el.remove(),400); },1500);
+}
+
+/* =======================================================================
+   5. BLUETOOTH + GATT-EXPLORER
+   ===================================================================== */
+async function connect(){
+  if(!navigator.bluetooth){ alert("Kein Web Bluetooth.\niPad: Bluefy-Browser.\nAndroid: Chrome."); return; }
+  try{
+    setStatus("scan"); log("Starte Geräteauswahl…","text-sky-300");
+    state.device=await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:CONFIG.OPTIONAL_SERVICES });
+    log("Gerät: "+(state.device.name||"(ohne Namen)"),"text-emerald-300");
+    state.device.addEventListener("gattserverdisconnected", onDisconnected);
+    state.server=await state.device.gatt.connect();
+    log("GATT-Server verbunden.","text-emerald-300");
+    state.connected=true; setStatus("on");
+    btnConnect.classList.remove("pulse"); btnConnect.innerHTML="<span>✅</span> Verbunden";
+    btnCalibrate.disabled=false; btnPlay.disabled=false;
+    overlayHint.textContent="Bereit! Modus wählen und Sitzung starten.";
+    await scanAllServices(); await subscribeAll();
+  }catch(err){
+    console.error(err); setStatus(state.connected?"on":"error");
+    log("Verbindungsfehler: "+err.message,"text-rose-400");
+    if(err.name!=="NotFoundError") alert("Verbindung fehlgeschlagen: "+err.message);
+    else if(!state.connected) setStatus("off");
+  }
+}
+function onDisconnected(){
+  state.connected=false; state.playing=false; setStatus("off");
+  btnConnect.innerHTML="<span>🔗</span> Disc verbinden"; btnConnect.classList.add("pulse");
+  btnCalibrate.disabled=true; btnPlay.disabled=true;
+  overlay.classList.remove("hidden"); overlayHint.textContent="Verbindung getrennt. Bitte erneut verbinden.";
+  log("⚠️ Gerät getrennt.","text-rose-400");
+}
+async function scanAllServices(){
+  if(!state.server){ log("Kein Server.","text-rose-400"); return; }
+  gattTree.innerHTML=""; log("📡 Scanne Services…","text-sky-300");
+  let services=[];
+  try{ services=await state.server.getPrimaryServices(); }
+  catch(e){ log("getPrimaryServices fehlgeschlagen — versuche bekannte Services.","text-amber-300");
+    for(const s of CONFIG.OPTIONAL_SERVICES){ try{ services.push(await state.server.getPrimaryService(s)); }catch(_){} } }
+  if(!services.length){ log("Keine Services gefunden.","text-rose-400"); return; }
+  for(const svc of services){
+    const sNode=document.createElement("div"); sNode.className="bg-white rounded-xl border border-slate-200 p-2";
+    sNode.innerHTML='<div class="mono text-[11px] text-sky-600 break-all font-semibold">SERVICE '+svc.uuid+'</div>';
+    let chars=[]; try{ chars=await svc.getCharacteristics(); }catch(_){}
+    log("Service "+svc.uuid+" → "+chars.length+" Characteristic(s)","text-sky-200");
+    for(const c of chars){
+      const props=Object.entries(c.properties).filter(([k,v])=>v).map(([k])=>k).join(",");
+      const canNotify=c.properties.notify||c.properties.indicate;
+      const row=document.createElement("div"); row.className="mt-1 flex items-center gap-2";
+      row.innerHTML='<span class="mono text-[10px] break-all grow text-slate-600">↳ '+c.uuid+'<br><span class="text-slate-400">['+props+']</span></span>';
+      const btn=document.createElement("button"); btn.textContent=canNotify?"Nutzen":"Lesen";
+      btn.className="shrink-0 px-2 py-1 rounded-lg bg-teal-100 hover:bg-teal-200 text-teal-700 text-[10px] font-semibold";
+      btn.onclick=()=>setActiveCharacteristic(c,svc); row.appendChild(btn); sNode.appendChild(row);
+    }
+    gattTree.appendChild(sNode);
+  }
+  log("✅ Scan abgeschlossen.","text-emerald-300");
+}
+async function subscribeAll(){
+  if(!state.server) return; let count=0, services=[];
+  try{ services=await state.server.getPrimaryServices(); }catch(_){}
+  for(const svc of services){
+    let chars=[]; try{ chars=await svc.getCharacteristics(); }catch(_){ continue; }
+    for(const c of chars){
+      if(c.properties.notify||c.properties.indicate){
+        try{ await c.startNotifications(); c.addEventListener("characteristicvaluechanged", onValueChanged); state.notifyChars.push(c); count++;
+          if(CONFIG.DATA_CHARACTERISTIC_UUID && c.uuid.toLowerCase()===CONFIG.DATA_CHARACTERISTIC_UUID.toLowerCase()) setActiveCharacteristic(c,svc);
+        }catch(e){}
+      }
+    }
+  }
+  log("🔔 "+count+" Notify-Characteristic(s) abonniert. Kippe die Disc!","text-indigo-300");
+  if(!state.activeChar && state.notifyChars.length===1) setActiveCharacteristic(state.notifyChars[0]);
+}
+function setActiveCharacteristic(c,svc){
+  state.activeChar=c; activeSource.textContent=(svc?svc.uuid+" › ":"")+c.uuid;
+  log("🎯 Aktive Datenquelle: "+c.uuid,"text-emerald-300");
+}
+function onValueChanged(ev){
+  const dv=ev.target.value, uuid=ev.target.uuid, now=performance.now();
+  ev.target.__lastLog=ev.target.__lastLog||0;
+  if(now-ev.target.__lastLog>90){ ev.target.__lastLog=now; log(uuid.slice(4,8)+" ▸ "+($("logHex").checked?bytesToHex(dv):bytesToDec(dv)),"text-emerald-300"); }
+  if(!state.activeChar){ state.activeChar=ev.target; activeSource.textContent=uuid; }
+  if(ev.target!==state.activeChar) return;
+  const p=parseValues(dv); state.rawX=p.x; state.rawY=p.y; updateAxes();
+}
+function parseValues(dv){
+  const n=dv.byteLength; let x=0,y=0;
+  try{
+    if(CONFIG.PARSE_MODE==="int16le" && n>=4){ x=dv.getInt16(0,true); y=dv.getInt16(2,true); }
+    else if(CONFIG.PARSE_MODE==="int8" && n>=2){ x=dv.getInt8(0); y=dv.getInt8(1); }
+    else if(CONFIG.PARSE_MODE==="uint8" && n>=2){ x=dv.getUint8(0)-128; y=dv.getUint8(1)-128; }
+    else { if(n>=4){ x=dv.getInt16(0,true); y=dv.getInt16(2,true); } else if(n>=2){ x=dv.getInt8(0); y=dv.getInt8(1); } else if(n===1){ x=dv.getInt8(0); } }
+  }catch(e){}
+  return {x,y};
+}
+
+/* =======================================================================
+   6. KALIBRIERUNG + DÄMPFUNG + LIVE-AUSWERTUNG
+   ===================================================================== */
+function calibrate(){
+  state.zeroX=state.rawX; state.zeroY=state.rawY; state.bufX=[]; state.bufY=[];
+  log("🎯 Nullpunkt: X="+state.zeroX+" Y="+state.zeroY,"text-amber-300"); flash("Nullpunkt gespeichert ✓");
+}
+function updateAxes(){
+  let cx=state.rawX-state.zeroX, cy=state.rawY-state.zeroY;
+  state.bufX.push(cx); state.bufY.push(cy);
+  while(state.bufX.length>state.smoothing) state.bufX.shift();
+  while(state.bufY.length>state.smoothing) state.bufY.shift();
+  const avgX=state.bufX.reduce((a,b)=>a+b,0)/state.bufX.length;
+  const avgY=state.bufY.reduce((a,b)=>a+b,0)/state.bufY.length;
+  const scale=state.sensitivity;
+  let nx=Math.max(-1,Math.min(1,avgX/scale)), ny=Math.max(-1,Math.min(1,avgY/scale));
+  if(state.invertX) nx=-nx; if(state.invertY) ny=-ny;
+  state.velMag=Math.hypot(nx-state.smoothX, ny-state.smoothY);
+  state.smoothX=nx; state.smoothY=ny;
+  drawAxisBars(nx,ny);
+}
+function drawAxisBars(nx,ny){
+  const ax=$("axBar"), ay=$("ayBar");
+  let w=Math.abs(nx)*50; ax.style.width=Math.max(2,w)+"%"; ax.style.left=nx>=0?"50%":(50-w)+"%";
+  let h=Math.abs(ny)*50; ay.style.width=Math.max(2,h)+"%"; ay.style.left=ny>=0?"50%":(50-h)+"%";
+  $("axLabel").textContent=nx.toFixed(2); $("ayLabel").textContent=ny.toFixed(2);
+}
+
+function recordSample(dt){
+  const nx=state.smoothX, ny=state.smoothY;
+  session.sampleN++;
+  session.tiltSum += Math.hypot(nx,ny);
+  if(nx<-DEADZONE) session.timeL+=dt; else if(nx>DEADZONE) session.timeR+=dt;
+  if(ny>DEADZONE) session.timeF+=dt; else if(ny<-DEADZONE) session.timeB+=dt;
+  session.romL=Math.max(session.romL, Math.max(0,-nx));
+  session.romR=Math.max(session.romR, Math.max(0, nx));
+  session.romF=Math.max(session.romF, Math.max(0, ny));
+  session.romB=Math.max(session.romB, Math.max(0,-ny));
+  session.velWindow.push(state.velMag);
+  if(session.velWindow.length>30) session.velWindow.shift();
+  updateLiveStats();
+}
+function updateLiveStats(){
+  const tl=session.timeL, tr=session.timeR, tf=session.timeF, tb=session.timeB;
+  const lr=tl+tr||1, fb=tf+tb||1;
+  const pL=Math.round(tl/lr*100), pR=100-pL, pB=Math.round(tb/fb*100), pF=100-pB;
+  $("asymL").textContent=pL+"%"; $("asymR").textContent=pR+"%";
+  $("asymLBar").style.width=pL+"%"; $("asymRBar").style.width=pR+"%";
+  $("asymB").textContent=pB+"%"; $("asymF").textContent=pF+"%";
+  $("asymBBar").style.width=pB+"%"; $("asymFBar").style.width=pF+"%";
+  $("romL").textContent=Math.round(session.romL*100)+"%";
+  $("romR").textContent=Math.round(session.romR*100)+"%";
+  $("romF").textContent=Math.round(session.romF*100)+"%";
+  $("romB").textContent=Math.round(session.romB*100)+"%";
+  const meanTilt=session.sampleN?session.tiltSum/session.sampleN:0;
+  const stab=Math.max(0,Math.round((1-Math.min(1,meanTilt))*100));
+  $("stabIdx").textContent=stab+"%";
+  $("romTargetTxt").textContent=Math.round(adaptiveRadius()*100)+"% vom Rand";
+}
+function adaptiveRadius(){
+  const maxRom=Math.max(session.romL,session.romR,session.romF,session.romB,0.001);
+  return Math.max(0.35, Math.min(0.95, maxRom*0.78));
+}
+
+/* =======================================================================
+   7. SPIEL (Canvas) — mit Modi
+   ===================================================================== */
+const canvas=$("game"), ctx=canvas.getContext("2d");
+let W=0,H=0,DPR=Math.min(2,window.devicePixelRatio||1);
+function resize(){ const r=canvas.getBoundingClientRect(); W=r.width; H=r.height; canvas.width=W*DPR; canvas.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+window.addEventListener("resize", resize);
+
+const game={ balloon:{x:0,y:0,vx:0,vy:0,r:24}, items:[], hazards:[], particles:[], clouds:[],
+  centerHold:0, balanceTime:0, spawnT:0, hazT:0, t:0, running:false, calm:1,
+  target:null, targetSide:1, staticNeed:5, staticHold:0, dual:null, dualT:0 };
+
+function initGame(){
+  game.balloon.x=W/2; game.balloon.y=H*0.6; game.balloon.vx=0; game.balloon.vy=0;
+  game.items=[]; game.hazards=[]; game.particles=[]; game.clouds=[];
+  game.centerHold=0; game.balanceTime=0; game.spawnT=0; game.hazT=0; game.t=0; game.calm=1;
+  game.target=null; game.targetSide=1; game.staticNeed=5; game.staticHold=0; game.dual=null; game.dualT=0;
+  for(let i=0;i<5;i++) game.clouds.push({x:Math.random()*W,y:Math.random()*H*0.6,s:0.6+Math.random()*0.8,sp:6+Math.random()*10});
+}
+
+function requestStart(){
+  if(!state.connected && !state.demo){ overlayHint.textContent="Bitte verbinden oder Demo-Modus starten."; return; }
+  runCountdown(3, ()=>{ calibrate(); beginSession(); });
+}
+function runCountdown(n, done){
+  const box=$("countdown"), num=$("countNum"); box.classList.remove("hidden"); overlay.classList.add("hidden");
+  num.textContent=n; let i=n;
+  const iv=setInterval(()=>{ i--; if(i<=0){ clearInterval(iv); box.classList.add("hidden"); done(); } else { num.textContent=i; } },1000);
+}
+function beginSession(){
+  resize(); initGame();
+  session=freshSession(); session.mode=state.mode; session.start=Date.now();
+  game.running=true; state.playing=true;
+  overlay.classList.add("hidden");
+  btnPlay.innerHTML="<span>⏹️</span> Beenden";
+  $("dualBox").classList.toggle("hidden", state.mode!=="dual");
+  if(state.mode==="dual") newDualQuestion();
+  if(state.mode==="shift") spawnTarget();
+  if(state.mode==="static"){ game.staticNeed=5; }
+  log("▶️ Sitzung gestartet — Modus: "+state.mode,"text-emerald-300");
+}
+function endSession(){
+  game.running=false; state.playing=false;
+  $("dualBox").classList.add("hidden"); $("calmBanner").classList.add("hidden");
+  overlay.classList.remove("hidden");
+  btnPlay.innerHTML="<span>▶️</span> Sitzung starten";
+  session.elapsed=(Date.now()-session.start)/1000;
+  if(session.elapsed>4){ saveSession(); openReport(); }
+  overlayHint.textContent="Sitzung beendet. Bericht gespeichert.";
+  log("⏹️ Sitzung beendet ("+fmtTime(session.elapsed)+").","text-amber-300");
+}
+
+let lastTS=performance.now();
+function loop(ts){
+  const dt=Math.min(0.05,(ts-lastTS)/1000); lastTS=ts;
+  if(state.demo) demoFeed();
+  if(game.running){ recordSample(dt); update(dt); checkCalm(); }
+  render(); requestAnimationFrame(loop);
+}
+
+function checkCalm(){
+  if(!state.safety){ $("calmBanner").classList.add("hidden"); game.calm=1; return; }
+  const avgVel=session.velWindow.reduce((a,b)=>a+b,0)/(session.velWindow.length||1);
+  const hectic=avgVel>0.06;
+  $("calmBanner").classList.toggle("hidden", !hectic);
+  game.calm = hectic ? 0.5 : 1;
+}
+
+function update(dt){
+  game.t+=dt;
+  const b=game.balloon;
+  const accelX=state.smoothX*520, accelY=-state.smoothY*420;
+  b.vx+=accelX*dt; b.vy+=accelY*dt; b.vx*=0.92; b.vy*=0.92;
+  b.x+=b.vx*dt; b.y+=b.vy*dt; b.vy+=(H*0.55-b.y)*0.0006*60*dt;
+  b.x=Math.max(b.r,Math.min(W-b.r,b.x)); b.y=Math.max(b.r,Math.min(H-b.r,b.y));
+
+  const tilt=Math.hypot(state.smoothX,state.smoothY);
+  const nearCenter=Math.abs(b.x-W/2)<W*0.14 && tilt<0.18;
+  if(nearCenter){ game.centerHold+=dt; game.balanceTime+=dt; session.holdTime+=dt; session.score+=dt*8;
+    if(game.centerHold>1 && Math.floor(game.balanceTime*2)%2===0) spawnSparkle(b.x,b.y,"#10b981"); }
+  else game.centerHold=Math.max(0,game.centerHold-dt*0.5);
+
+  if(state.mode==="free") updateFree(dt,b);
+  else if(state.mode==="static") updateStatic(dt,b);
+  else if(state.mode==="shift") updateShift(dt,b);
+  else if(state.mode==="dual") updateDual(dt,b);
+
+  for(let i=game.particles.length-1;i>=0;i--){ const p=game.particles[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=120*dt; p.life-=dt; if(p.life<=0) game.particles.splice(i,1); }
+  for(const c of game.clouds){ c.x+=c.sp*dt; if(c.x>W+60){ c.x=-60; c.y=Math.random()*H*0.6; } }
+  updateHUD();
+}
+
+function updateFree(dt,b){
+  const cf=game.calm||1;
+  game.spawnT-=dt; game.hazT-=dt;
+  if(game.spawnT<=0){ spawnItem(); game.spawnT=(0.9+Math.random()*0.7)/cf; }
+  if(game.hazT<=0){ spawnHazard(); game.hazT=(1.8+Math.random()*1.4)/cf; }
+  moveItems(dt,b); moveHazards(dt,b);
+}
+function updateStatic(dt,b){
+  const tilt=Math.hypot(state.smoothX,state.smoothY);
+  if(tilt<0.16 && Math.abs(b.x-W/2)<W*0.16){ game.staticHold+=dt; session.score+=dt*12; }
+  else game.staticHold=Math.max(0,game.staticHold-dt*1.2);
+  if(game.staticHold>=game.staticNeed){
+    session.staticRound++; spawnBurst(b.x,b.y,"#10b981"); flash("Runde "+session.staticRound+" geschafft! ("+game.staticNeed+"s)");
+    game.staticHold=0; game.staticNeed=Math.min(30, game.staticNeed+3); session.score+=50;
+  }
+}
+function spawnTarget(){
+  const r=adaptiveRadius(), side=game.targetSide;
+  game.target={ x:W/2+side*r*(W/2-40), y:H*0.55, rad:38, held:0, need:1.2 };
+  game.targetSide*=-1;
+}
+function updateShift(dt,b){
+  if(!game.target) spawnTarget();
+  const t=game.target;
+  if(Math.hypot(t.x-b.x,t.y-b.y)<t.rad){ t.held+=dt; session.score+=dt*10;
+    if(t.held>=t.need){ spawnBurst(t.x,t.y,"#f59e0b"); session.score+=30; spawnTarget(); } }
+  else t.held=Math.max(0,t.held-dt*0.8);
+}
+function newDualQuestion(){
+  const a=2+Math.floor(Math.random()*8), c=2+Math.floor(Math.random()*8);
+  const ops=[["+",a+c],["−",Math.abs(a-c)],["·",a*c]];
+  const op=ops[Math.floor(Math.random()*ops.length)];
+  const ans=op[1];
+  const opts=new Set([ans]);
+  while(opts.size<3){ const cand=ans+(Math.floor(Math.random()*7)-3); if(cand!==ans) opts.add(cand); }
+  const arr=[...opts].sort(()=>Math.random()-0.5);
+  game.dual={ans};
+  let qtext;
+  if(op[0]==="−") qtext=(a>=c?a+" − "+c:c+" − "+a)+" = ?";
+  else qtext=a+" "+op[0]+" "+c+" = ?";
+  $("dualQ").textContent=qtext;
+  const wrap=$("dualOpts"); wrap.innerHTML="";
+  arr.forEach(v=>{ const btn=document.createElement("button");
+    btn.className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-teal-100 text-slate-700 font-bold mono text-lg";
+    btn.textContent=v; btn.onclick=()=>answerDual(v); wrap.appendChild(btn); });
+}
+function answerDual(v){
+  session.dualTotal++;
+  if(game.dual && v===game.dual.ans){ session.dualCorrect++; session.score+=20; spawnBurst(game.balloon.x,game.balloon.y,"#38bdf8"); flash("Richtig! ✓"); }
+  else flash("Knapp daneben");
+  newDualQuestion();
+}
+function updateDual(dt,b){
+  const cf=game.calm||1;
+  game.spawnT-=dt; if(game.spawnT<=0){ spawnItem(); game.spawnT=(1.1+Math.random()*0.8)/cf; }
+  moveItems(dt,b);
+}
+
+function spawnItem(){
+  const edge=Math.random()<0.45; let x;
+  if(edge) x=Math.random()<0.5?W*0.08:W*0.92; else x=W*0.2+Math.random()*W*0.6;
+  const heal=Math.random()<0.22;
+  game.items.push({x,y:-20,r:14,heal,edge,vy:34+Math.random()*22,bob:Math.random()*6.28});
+}
+function spawnHazard(){ game.hazards.push({x:W*0.12+Math.random()*W*0.76,y:-30,r:26,vy:42+Math.random()*30,drift:(Math.random()-0.5)*16,t:Math.random()*6.28}); }
+function moveItems(dt,b){
+  for(let i=game.items.length-1;i>=0;i--){ const it=game.items[i]; it.y+=it.vy*dt; it.bob+=dt*3;
+    if(it.y>H+30){ game.items.splice(i,1); continue; }
+    if(Math.hypot(it.x-b.x,it.y-b.y)<it.r+b.r){
+      if(it.heal){ session.heal++; session.score+=25; spawnBurst(it.x,it.y,"#fb7185"); }
+      else { session.score+=it.edge?20:10; spawnBurst(it.x,it.y,it.edge?"#f59e0b":"#38bdf8"); }
+      game.items.splice(i,1);
+    } }
+}
+function moveHazards(dt,b){
+  for(let i=game.hazards.length-1;i>=0;i--){ const hz=game.hazards[i]; hz.t+=dt; hz.y+=hz.vy*dt; hz.x+=Math.sin(hz.t)*hz.drift*dt;
+    if(hz.y>H+40){ game.hazards.splice(i,1); continue; }
+    if(Math.hypot(hz.x-b.x,hz.y-b.y)<hz.r+b.r-6){ session.score=Math.max(0,session.score-15); session.hazards++; game.centerHold=0;
+      b.vx+=(b.x<hz.x?-1:1)*160; b.vy-=120; spawnBurst(hz.x,hz.y,"#94a3b8"); game.hazards.splice(i,1); } }
+}
+function spawnBurst(x,y,color){ for(let i=0;i<14;i++){ const a=Math.random()*6.28, sp=40+Math.random()*120; game.particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:0.5+Math.random()*0.4,color,r:2+Math.random()*3}); } }
+function spawnSparkle(x,y,color){ game.particles.push({x:x+(Math.random()-0.5)*30,y:y+(Math.random()-0.5)*30,vx:(Math.random()-0.5)*20,vy:-20-Math.random()*20,life:0.7,color,r:2}); }
+
+function render(){
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#bae6fd"); g.addColorStop(0.55,"#cffafe"); g.addColorStop(1,"#d1fae5");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  drawHills();
+  for(const c of game.clouds) drawCloud(c.x,c.y,c.s,"rgba(255,255,255,0.75)");
+  ctx.save(); ctx.globalAlpha=(Math.abs(game.balloon.x-W/2)<W*0.14)?0.18:0.07; ctx.fillStyle="#10b981"; ctx.fillRect(W/2-W*0.14,0,W*0.28,H); ctx.restore();
+  if(state.mode==="shift" && game.target) drawTarget(game.target);
+  if(state.mode==="static") drawStaticRing();
+  for(const it of game.items){ const yy=it.y+Math.sin(it.bob)*3; if(it.heal) drawHeal(it.x,yy,it.r); else drawStar(it.x,yy,it.r,it.edge); }
+  for(const hz of game.hazards) drawStorm(hz.x,hz.y,hz.r);
+  for(const p of game.particles){ ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  if(game.running||state.playing) drawBalloon(game.balloon.x,game.balloon.y,game.balloon.r);
+}
+function drawTarget(t){
+  const pulse=4*Math.sin(game.t*4);
+  ctx.save();
+  ctx.strokeStyle="#f59e0b"; ctx.lineWidth=3; ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.arc(t.x,t.y,t.rad+pulse,0,6.28); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha=0.18; ctx.fillStyle="#fbbf24"; ctx.beginPath(); ctx.arc(t.x,t.y,t.rad,0,6.28); ctx.fill();
+  ctx.globalAlpha=1;
+  const frac=Math.min(1,t.held/t.need);
+  ctx.strokeStyle="#f59e0b"; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(t.x,t.y,t.rad,-1.57,-1.57+frac*6.28); ctx.stroke();
+  ctx.restore();
+}
+function drawStaticRing(){
+  const frac=Math.min(1,game.staticHold/game.staticNeed);
+  ctx.save(); ctx.translate(W/2,H*0.55);
+  ctx.strokeStyle="rgba(16,185,129,0.25)"; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(0,0,60,0,6.28); ctx.stroke();
+  ctx.strokeStyle="#10b981"; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(0,0,60,-1.57,-1.57+frac*6.28); ctx.stroke();
+  ctx.fillStyle="#047857"; ctx.font="bold 14px sans-serif"; ctx.textAlign="center";
+  ctx.fillText(Math.ceil(game.staticNeed-game.staticHold)+"s", 0, 5); ctx.restore();
+}
+function drawHills(){
+  ctx.fillStyle="rgba(16,185,129,0.25)"; ctx.beginPath(); ctx.moveTo(0,H);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,H-60-Math.sin((x/W)*3.14)*40); ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  ctx.fillStyle="rgba(13,148,136,0.2)"; ctx.beginPath(); ctx.moveTo(0,H);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,H-30-Math.cos((x/W)*4)*25); ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+}
+function drawCloud(x,y,s,fill){ ctx.fillStyle=fill; ctx.beginPath(); ctx.arc(x,y,18*s,0,6.28); ctx.arc(x+18*s,y+4*s,14*s,0,6.28); ctx.arc(x-18*s,y+4*s,14*s,0,6.28); ctx.arc(x,y+8*s,16*s,0,6.28); ctx.fill(); }
+function drawBalloon(x,y,r){
+  ctx.strokeStyle="rgba(120,80,40,0.6)"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(x-r*0.5,y+r*0.7); ctx.lineTo(x-r*0.25,y+r*1.3); ctx.moveTo(x+r*0.5,y+r*0.7); ctx.lineTo(x+r*0.25,y+r*1.3); ctx.stroke();
+  ctx.fillStyle="#a16207"; roundRect(x-r*0.3,y+r*1.25,r*0.6,r*0.45,3); ctx.fill();
+  const bg=ctx.createRadialGradient(x-r*0.3,y-r*0.4,2,x,y,r*1.2); bg.addColorStop(0,"#fda4af"); bg.addColorStop(0.5,"#fb7185"); bg.addColorStop(1,"#f43f5e");
+  ctx.fillStyle=bg; ctx.beginPath(); ctx.ellipse(x,y,r*0.95,r*1.1,0,0,6.28); ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.beginPath(); ctx.ellipse(x-r*0.3,y-r*0.4,r*0.22,r*0.34,-0.4,0,6.28); ctx.fill();
+}
+function drawStar(x,y,r,edge){
+  ctx.save(); ctx.translate(x,y); ctx.fillStyle=edge?"#f59e0b":"#fbbf24"; ctx.shadowColor=edge?"#f59e0b":"#fcd34d"; ctx.shadowBlur=12;
+  ctx.beginPath(); for(let i=0;i<5;i++){ const a=-1.57+i*1.2566, a2=a+0.628; ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r); ctx.lineTo(Math.cos(a2)*r*0.45,Math.sin(a2)*r*0.45); }
+  ctx.closePath(); ctx.fill();
+  if(edge){ ctx.shadowBlur=0; ctx.fillStyle="#fff"; ctx.font="bold 9px sans-serif"; ctx.textAlign="center"; ctx.fillText("+",0,3); } ctx.restore();
+}
+function drawHeal(x,y,r){
+  ctx.save(); ctx.translate(x,y); ctx.fillStyle="#fb7185"; ctx.shadowColor="#fda4af"; ctx.shadowBlur=12; ctx.beginPath(); ctx.arc(0,0,r,0,6.28); ctx.fill();
+  ctx.shadowBlur=0; ctx.fillStyle="#fff"; roundRect(-r*0.18,-r*0.55,r*0.36,r*1.1,2); ctx.fill(); roundRect(-r*0.55,-r*0.18,r*1.1,r*0.36,2); ctx.fill(); ctx.restore();
+}
+function drawStorm(x,y,r){ drawCloud(x,y,r/18,"#cbd5e1"); drawCloud(x,y,r/22,"#94a3b8");
+  ctx.strokeStyle="#fbbf24"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x-2,y+r*0.4); ctx.lineTo(x-6,y+r*0.9); ctx.lineTo(x+1,y+r*0.9); ctx.lineTo(x-3,y+r*1.4); ctx.stroke(); }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function updateHUD(){
+  $("hudScore").textContent=Math.floor(session.score);
+  $("hudBalance").textContent=Math.floor(session.holdTime)+"s";
+  $("hudTime").textContent=fmtTime((Date.now()-session.start)/1000);
+  const frac=state.mode==="static"?Math.min(1,game.staticHold/game.staticNeed):Math.min(1,game.centerHold/3);
+  $("balanceRing").style.strokeDashoffset=94*(1-frac);
+}
+
+/* =======================================================================
+   8. DEMO-MODUS
+   ===================================================================== */
+const demoInput={x:0,y:0,keyX:0,keyY:0,usePointer:false};
+function demoFeed(){
+  let tx=demoInput.usePointer?demoInput.x:demoInput.keyX, ty=demoInput.usePointer?demoInput.y:demoInput.keyY;
+  state.rawX=state.zeroX+tx*state.sensitivity; state.rawY=state.zeroY+ty*state.sensitivity; updateAxes();
+}
+function enableDemo(){
+  state.demo=true; state.connected=false; setStatus("demo");
+  btnCalibrate.disabled=false; btnPlay.disabled=false; btnDemo.innerHTML="<span>🧪</span> Demo aktiv";
+  overlayHint.textContent="Demo aktiv: Maus/Finger über dem Feld oder Pfeiltasten.";
+  log("🧪 Demo-Modus aktiv.","text-violet-300");
+}
+canvas.addEventListener("pointermove",(e)=>{ if(!state.demo) return; const r=canvas.getBoundingClientRect();
+  demoInput.usePointer=true; demoInput.x=Math.max(-1,Math.min(1,((e.clientX-r.left)/r.width-0.5)*2)); demoInput.y=Math.max(-1,Math.min(1,-((e.clientY-r.top)/r.height-0.55)*2)); });
+canvas.addEventListener("pointerleave",()=>{ demoInput.usePointer=false; demoInput.x=0; demoInput.y=0; });
+window.addEventListener("keydown",(e)=>{ if(!state.demo) return; demoInput.usePointer=false;
+  if(e.key==="ArrowLeft") demoInput.keyX=-1; if(e.key==="ArrowRight") demoInput.keyX=1; if(e.key==="ArrowUp") demoInput.keyY=1; if(e.key==="ArrowDown") demoInput.keyY=-1; });
+window.addEventListener("keyup",(e)=>{ if(["ArrowLeft","ArrowRight"].includes(e.key)) demoInput.keyX=0; if(["ArrowUp","ArrowDown"].includes(e.key)) demoInput.keyY=0; });
+
+/* =======================================================================
+   9. BERICHTE / VERLAUF / EXPORT (localStorage)
+   ===================================================================== */
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch(e){ return []; } }
+function saveHistory(arr){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }catch(e){} }
+function summarize(s){
+  const lr=s.timeL+s.timeR||1, fb=s.timeF+s.timeB||1;
+  const meanTilt=s.sampleN?s.tiltSum/s.sampleN:0;
+  return {
+    date:new Date(s.start).toISOString(), mode:s.mode, dur:Math.round(s.elapsed),
+    score:Math.round(s.score), heal:s.heal, hazards:s.hazards, hold:Math.round(s.holdTime),
+    stab:Math.max(0,Math.round((1-Math.min(1,meanTilt))*100)),
+    asymL:Math.round(s.timeL/lr*100), asymR:Math.round(s.timeR/lr*100),
+    asymF:Math.round(s.timeF/fb*100), asymB:Math.round(s.timeB/fb*100),
+    romL:Math.round(s.romL*100), romR:Math.round(s.romR*100), romF:Math.round(s.romF*100), romB:Math.round(s.romB*100),
+    dual: s.dualTotal? Math.round(s.dualCorrect/s.dualTotal*100): null,
+    staticRounds:s.staticRound
+  };
+}
+function saveSession(){ const h=loadHistory(); h.push(summarize(session)); saveHistory(h); }
+const MODE_NAMES={free:"Freies Spiel",static:"Statische Balance",shift:"Gewichtsverlagerung",dual:"Dual-Task"};
+
+function openReport(){
+  const h=loadHistory(); const body=$("reportBody");
+  if(!h.length){ body.innerHTML='<p class="text-slate-500">Noch keine Sitzungen aufgezeichnet.</p>'; $("reportWrap").classList.remove("hidden"); return; }
+  const last=h[h.length-1];
+  const sparks=h.slice(-12);
+  body.innerHTML =
+    '<div class="bg-white rounded-2xl p-4 shadow-sm mb-4">' +
+      '<div class="flex items-center justify-between mb-2">' +
+        '<div><div class="font-bold text-slate-800">Letzte Sitzung</div><div class="text-xs text-slate-500">'+new Date(last.date).toLocaleString()+' · '+(MODE_NAMES[last.mode]||last.mode)+'</div></div>' +
+        '<div class="text-right"><div class="text-2xl font-bold text-teal-600 mono">'+last.score+'</div><div class="text-[10px] text-slate-400 uppercase">Punkte</div></div>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">' +
+        stat("Dauer", fmtTime(last.dur)) + stat("Balance", last.hold+"s") + stat("Stabilität", last.stab+"%") + stat("Heilung", last.heal) +
+      '</div>' +
+      '<div class="mt-3">' +
+        '<div class="text-xs text-slate-500 mb-1">Asymmetrie Links/Rechts: <b>'+last.asymL+'% / '+last.asymR+'%</b> '+asymHint(last.asymL,last.asymR)+'</div>' +
+        '<div class="h-3 rounded-full overflow-hidden flex bg-slate-200 mb-2"><div class="bg-teal-400 h-full" style="width:'+last.asymL+'%"></div><div class="bg-sky-400 h-full" style="width:'+last.asymR+'%"></div></div>' +
+        '<div class="text-xs text-slate-500 mb-1">ROM — L '+last.romL+'% · R '+last.romR+'% · Vorne '+last.romF+'% · Hinten '+last.romB+'%</div>' +
+        (last.dual!=null?'<div class="text-xs text-slate-500">Dual-Task Trefferquote: <b>'+last.dual+'%</b></div>':'') +
+        (last.staticRounds?'<div class="text-xs text-slate-500">Statische Runden geschafft: <b>'+last.staticRounds+'</b></div>':'') +
+      '</div>' +
+    '</div>' +
+    '<div class="bg-white rounded-2xl p-4 shadow-sm mb-2">' +
+      '<div class="font-semibold text-slate-700 text-sm mb-2">Verlauf — letzte '+sparks.length+' Sitzung(en)</div>' +
+      sparkRow("Stabilität %", sparks.map(s=>s.stab), "#10b981", 100) +
+      sparkRow("Punkte", sparks.map(s=>s.score), "#0ea5e9", 0) +
+      sparkRow("Balance-Haltezeit s", sparks.map(s=>s.hold), "#f59e0b", 0) +
+    '</div>' +
+    '<div class="text-xs text-slate-400">'+h.length+' Sitzung(en) gespeichert.</div>';
+  $("reportWrap").classList.remove("hidden");
+}
+function stat(label,val){ return '<div class="bg-slate-50 rounded-xl py-2"><div class="font-bold text-slate-800 mono">'+val+'</div><div class="text-[10px] text-slate-400 uppercase">'+label+'</div></div>'; }
+function asymHint(l,r){ const d=Math.abs(l-r); if(d<=12) return '<span class="text-emerald-500">· gut symmetrisch</span>'; if(d<=25) return '<span class="text-amber-500">· leichte Asymmetrie</span>'; return '<span class="text-rose-500">· deutliche Asymmetrie</span>'; }
+function sparkRow(label, vals, color, fixedMax){
+  const max=fixedMax||Math.max(1,...vals); const w=200, h=34, n=vals.length;
+  const pts=vals.map((v,i)=>{ const x=n>1?i/(n-1)*w:0; const y=h-(v/max)*h; return x.toFixed(1)+","+y.toFixed(1); }).join(" ");
+  const dots=vals.map((v,i)=>{ const x=n>1?i/(n-1)*w:0; const y=h-(v/max)*h; return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2" fill="'+color+'"/>'; }).join("");
+  return '<div class="flex items-center gap-3 mb-2"><div class="text-[11px] text-slate-500 w-32">'+label+'</div>'+
+    '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" class="overflow-visible"><polyline fill="none" stroke="'+color+'" stroke-width="2" points="'+pts+'"/>'+dots+'</svg>'+
+    '<div class="text-[11px] mono text-slate-600">'+(vals.length?vals[vals.length-1]:"–")+'</div></div>';
+}
+function exportCsv(){
+  const h=loadHistory(); if(!h.length){ flash("Kein Verlauf vorhanden"); return; }
+  const cols=["date","mode","dur","score","hold","stab","asymL","asymR","asymF","asymB","romL","romR","romF","romB","heal","hazards","dual","staticRounds"];
+  const rows=[cols.join(",")].concat(h.map(s=>cols.map(c=>s[c]==null?"":s[c]).join(",")));
+  const blob=new Blob([rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="balanceflow_sitzungen.csv"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000); flash("CSV exportiert ✓");
+}
+
+/* =======================================================================
+   10. UI-VERDRAHTUNG
+   ===================================================================== */
+btnConnect.onclick=connect; btnCalibrate.onclick=calibrate; btnDemo.onclick=enableDemo;
+btnPlay.onclick=()=>{ game.running ? endSession() : requestStart(); };
+$("btnScanAll").onclick=scanAllServices; $("btnSubscribeAll").onclick=subscribeAll; $("btnClearLog").onclick=()=>{ rawLog.innerHTML=""; };
+$("smoothRange").oninput=(e)=>{ state.smoothing=+e.target.value; $("smoothVal").textContent=e.target.value; };
+$("sensRange").oninput=(e)=>{ state.sensitivity=+e.target.value; $("sensVal").textContent=e.target.value; };
+$("invertX").onchange=(e)=>{ state.invertX=e.target.checked; };
+$("invertY").onchange=(e)=>{ state.invertY=e.target.checked; };
+$("safetyOn").onchange=(e)=>{ state.safety=e.target.checked; };
+
+const MODE_DESC={
+  free:"Sanftes Sammelspiel — frei lenken, Sterne fangen, Mitte halten.",
+  static:"Halte ruhig die Mitte. Die geforderte Haltedauer steigt mit jeder Runde.",
+  shift:"Verlagere das Gewicht abwechselnd zu den Zielen. Die Zielentfernung passt sich deinem ROM an.",
+  dual:"Sammeln und gleichzeitig Kopfrechnen — trainiert kognitiv-motorische Doppelaufgaben."
+};
+document.querySelectorAll("#modeBar .modechip").forEach(btn=>{
+  btn.onclick=()=>{
+    if(game.running){ flash("Erst Sitzung beenden, dann Modus wechseln."); return; }
+    document.querySelectorAll("#modeBar .modechip").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active"); state.mode=btn.dataset.mode; $("modeDesc").textContent=MODE_DESC[state.mode];
+  };
+});
+
+function openDebug(){ $("debugPanel").classList.remove("translate-x-full"); $("debugBackdrop").classList.remove("hidden"); }
+function closeDebug(){ $("debugPanel").classList.add("translate-x-full"); $("debugBackdrop").classList.add("hidden"); }
+$("btnDebug").onclick=openDebug; $("btnDebugClose").onclick=closeDebug; $("debugBackdrop").onclick=closeDebug;
+
+$("btnReport").onclick=openReport;
+$("btnReportClose").onclick=()=>$("reportWrap").classList.add("hidden");
+$("reportWrap").onclick=(e)=>{ if(e.target===$("reportWrap")) $("reportWrap").classList.add("hidden"); };
+$("btnExportCsv").onclick=exportCsv;
+$("btnPrint").onclick=()=>window.print();
+$("btnClearHist").onclick=()=>{ if(confirm("Gesamten Verlauf löschen?")){ saveHistory([]); openReport(); flash("Verlauf gelöscht"); } };
+
+/* =======================================================================
+   11. START
+   ===================================================================== */
+window.addEventListener("load",()=>{
+  resize(); setStatus("off"); requestAnimationFrame(loop);
+  if(!navigator.bluetooth) overlayHint.textContent="Kein Web Bluetooth in diesem Browser. iPad: Bluefy. Demo-Modus geht überall.";
+});
+</script>
+</body>
+</html>
