@@ -1,0 +1,15 @@
+{
+  "name": "Balance Flow — MFT Challenge Disc 2.0",
+  "short_name": "Balance Flow",
+  "description": "30 physiotherapeutische Balance-Spiele für das MFT Challenge Disc 2.0 (BLE).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#cffafe",
+  "theme_color": "#0d9488",
+  "lang": "de",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
