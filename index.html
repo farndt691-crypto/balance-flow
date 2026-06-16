@@ -199,7 +199,7 @@
 "use strict";
 /* ===== 1. KONFIG ===== */
 const CONFIG = { SERVICE_UUID:"", DATA_CHARACTERISTIC_UUID:"",
-  OPTIONAL_SERVICES:[0xfff0,0xffe0,0xfe40,0x1801,0x1800,0x180a,0x180f,"6e400001-b5a3-f393-e0a9-e50e24dcca9e","0000fff0-0000-1000-8000-00805f9b34fb","0000ffe0-0000-1000-8000-00805f9b34fb"],
+  OPTIONAL_SERVICES:["00001800-0000-1000-8000-00805f9b34fb","00001801-0000-1000-8000-00805f9b34fb","0000180a-0000-1000-8000-00805f9b34fb","0000180f-0000-1000-8000-00805f9b34fb","0000fe40-0000-1000-8000-00805f9b34fb","0000ffe0-0000-1000-8000-00805f9b34fb","0000fff0-0000-1000-8000-00805f9b34fb","0000ffe5-0000-1000-8000-00805f9b34fb","0000fee0-0000-1000-8000-00805f9b34fb","6e400001-b5a3-f393-e0a9-e50e24dcca9e"],
   PARSE_MODE:"auto" };
 const STORAGE_KEY="balanceflow_sessions_v2", DEADZONE=0.12;
 
@@ -241,7 +241,7 @@ async function connect(){
     state.server=await state.device.gatt.connect(); log("GATT-Server verbunden.","text-emerald-300");
     state.connected=true; setStatus("on"); btnConnect.classList.remove("pulse"); btnConnect.innerHTML="<span>✅</span> "+tr("b_connected"); btnCalibrate.disabled=false;
     await scanAllServices(); await subscribeAll();
-  }catch(err){ console.error(err); setStatus(state.connected?"on":"error"); log("Verbindungsfehler: "+err.message,"text-rose-400"); if(err.name!=="NotFoundError") alert("Verbindung fehlgeschlagen: "+err.message); else if(!state.connected) setStatus("off"); }
+  }catch(err){ console.error(err); setStatus(state.connected?"on":"error"); log("Verbindungsfehler: "+(err&&(err.message||err.name)||err),"text-rose-400"); if(err.name!=="NotFoundError") alert("Verbindung fehlgeschlagen: "+(err&&(err.message||err.name)||err)); else if(!state.connected) setStatus("off"); }
 }
 function onDisconnected(){ state.connected=false; setStatus("off"); btnConnect.innerHTML="<span>🔗</span> "+tr("b_connect"); btnConnect.classList.add("pulse"); btnCalibrate.disabled=true; log("⚠️ Gerät getrennt.","text-rose-400"); if(state.screen==="play") abortGame(); }
 async function scanAllServices(){
