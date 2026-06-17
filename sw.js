@@ -1,5 +1,5 @@
 /* Balance Flow Service Worker — Version bei jedem Deploy erhöhen! */
-const VERSION = 'bf-v11';
+const VERSION = 'bf-v12';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 self.addEventListener('install', (e) => {
   self.skipWaiting();
