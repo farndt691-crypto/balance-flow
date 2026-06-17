@@ -34,7 +34,7 @@
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-sky-400 grid place-items-center text-white text-xl shadow">🎈</div>
       <div><h1 class="font-bold text-lg leading-tight text-slate-800">Balance Flow</h1><p class="text-xs text-slate-500 leading-tight" data-i18n="subtitle">30 Spiele · MFT Challenge Disc 2.0</p></div>
     </div>
-    <div class="flex items-center gap-2"><button id="btnInstall" class="hidden px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold mr-1">⬇️ Installieren</button><button id="btnLang" aria-label="Sprache / Language" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold mr-1">EN</button><span id="statusDot" class="w-3 h-3 rounded-full bg-slate-300 transition-colors"></span><span id="statusText" class="text-sm font-medium text-slate-500">Getrennt</span></div>
+    <div class="flex items-center gap-2"><button id="btnInstall" class="hidden px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold mr-1">⬇️ Installieren</button><span id="statusDot" class="w-3 h-3 rounded-full bg-slate-300 transition-colors"></span><span id="statusText" class="text-sm font-medium text-slate-500">Getrennt</span></div>
   </header>
 
   <main class="max-w-5xl mx-auto p-4 grid gap-4">
@@ -111,7 +111,7 @@
         <div><span class="font-semibold text-teal-700" data-i18n="d_how">So geht's:</span> <span id="dHow" class="text-slate-600"></span></div>
         <div><span class="font-semibold text-teal-700" data-i18n="d_steer">Steuerung:</span> <span class="text-slate-600" data-i18n="d_steertext">sanftes Kippen — links/rechts und vor/zurück.</span></div>
       </div>
-      <div id="dWarn" class="hidden mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-3 text-amber-800 text-sm">⚠️ Noch nicht kalibriert. <b>Erst nach dem 3-2-1-Countdown</b> voll auf die Disc steigen — beim Countdown wird der Nullpunkt in ruhiger Mittelstellung gesetzt.</div>
+      <div class="mt-3 bg-white/70 rounded-2xl p-3"><div class="text-sm font-semibold text-teal-700 mb-2">🎓 Bewegungen üben</div><div id="practiceBox" class="relative mx-auto rounded-xl bg-slate-100 border border-slate-200 overflow-hidden" style="width:100%;max-width:300px;height:130px;"><div class="absolute left-1/2 top-0 bottom-0 w-px bg-slate-300"></div><div class="absolute top-1/2 left-0 right-0 h-px bg-slate-300"></div><div id="practiceTop" class="absolute top-1 left-1/2 -translate-x-1/2 text-[11px] text-slate-400">Vorne ▲</div><div id="practiceBot" class="absolute bottom-1 left-1/2 -translate-x-1/2 text-[11px] text-slate-400">▼ Hinten</div><div id="practiceL" class="absolute left-1 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">◀ Links</div><div id="practiceR" class="absolute right-1 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">Rechts ▶</div><div id="practiceDot" class="absolute w-6 h-6 rounded-full bg-teal-500 shadow" style="left:50%;top:50%;margin-left:-12px;margin-top:-12px;"></div></div><div class="text-xs text-slate-500 mt-2 text-center">Kippe einmal in jede geforderte Richtung. <span id="practiceMsg" class="font-semibold text-emerald-600"></span></div></div><div id="dWarn" class="hidden mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-3 text-amber-800 text-sm">⚠️ Noch nicht kalibriert. <b>Erst nach dem 3-2-1-Countdown</b> voll auf die Disc steigen — beim Countdown wird der Nullpunkt in ruhiger Mittelstellung gesetzt.</div>
       <div id="dConnWarn" class="hidden mt-3 bg-rose-50 border border-rose-200 rounded-2xl p-3 text-rose-700 text-sm">Bitte zuerst die Disc verbinden oder den Demo-Modus aktivieren.</div>
       <div class="mt-5 flex gap-3">
         <button id="dBack" data-i18n="d_back" class="px-5 py-4 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold flex-1 text-base">← Zurück</button>
@@ -136,7 +136,7 @@
   </div>
   <div id="portraitHint" data-i18n="portrait" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-10 glass rounded-2xl px-4 py-2 text-sm text-slate-600">📱 Quer halten für mehr Platz</div>
   <div id="calmBanner" data-i18n="calm" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-10 glass rounded-2xl px-4 py-2 text-sm text-rose-600 font-medium">🌬️ Ruhig atmen — langsame, kontrollierte Bewegungen.</div>
-  <div id="levelBanner" class="hidden absolute top-1/3 left-1/2 -translate-x-1/2 z-10 text-white text-5xl font-bold drop-shadow-lg">Level 2!</div>
+  <div id="startHint" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-20 glass rounded-2xl px-5 py-3 shadow-lg text-center text-base text-slate-700 max-w-md"></div><div id="levelBanner" class="hidden absolute top-1/3 left-1/2 -translate-x-1/2 z-10 text-white text-5xl font-bold drop-shadow-lg">Level 2!</div>
   <!-- Countdown -->
   <div id="countdown" class="hidden absolute inset-0 z-20 grid place-items-center bg-slate-900/70 text-center"><div><div class="text-white text-lg mb-2" data-i18n="cd_title">🎯 Kalibrierung — ruhig in der Mitte stehen</div><div id="countNum" class="text-white text-8xl font-bold">3</div></div></div>
   <!-- Pause-Overlay -->
@@ -205,7 +205,7 @@ const STORAGE_KEY="balanceflow_sessions_v2", DEADZONE=0.12;
 
 /* ===== 2. ZUSTAND ===== */
 const state={ device:null,server:null,notifyChars:[],activeChar:null, rawX:0,rawY:0,zeroX:0,zeroY:0,
-  bufX:[],bufY:[],smoothX:0,smoothY:0, velMag:0, connected:false,demo:false, screen:"home",
+  bufX:[],bufY:[],smoothX:0,smoothY:0, velMag:0, connected:false,demo:false, screen:"home", autoReconnect:false, activeUuid:null, reconnecting:false,
   smoothing:8,sensitivity:16,pace:1,invertX:false,invertY:false,ramp:true,safety:true,
   calibrated:false, lastData:0, wakeLock:null };
 let session=freshSession();
@@ -239,11 +239,16 @@ async function connect(){
     log("Gerät: "+(state.device.name||"(ohne Namen)"),"text-emerald-300");
     state.device.addEventListener("gattserverdisconnected",onDisconnected);
     state.server=await state.device.gatt.connect(); log("GATT-Server verbunden.","text-emerald-300");
-    state.connected=true; setStatus("on"); btnConnect.classList.remove("pulse"); btnConnect.innerHTML="<span>✅</span> "+tr("b_connected"); btnCalibrate.disabled=false;
+    state.connected=true; state.autoReconnect=true; setStatus("on"); btnConnect.classList.remove("pulse"); btnConnect.innerHTML="<span>✅</span> "+tr("b_connected"); btnCalibrate.disabled=false;
     await scanAllServices(); await subscribeAll();
   }catch(err){ console.error(err); setStatus(state.connected?"on":"error"); log("Verbindungsfehler: "+(err&&(err.message||err.name)||err),"text-rose-400"); if(err.name!=="NotFoundError") alert("Verbindung fehlgeschlagen: "+(err&&(err.message||err.name)||err)); else if(!state.connected) setStatus("off"); }
 }
-function onDisconnected(){ state.connected=false; setStatus("off"); btnConnect.innerHTML="<span>🔗</span> "+tr("b_connect"); btnConnect.classList.add("pulse"); btnCalibrate.disabled=true; log("⚠️ Gerät getrennt.","text-rose-400"); if(state.screen==="play") abortGame(); }
+function onDisconnected(){ state.connected=false; btnCalibrate.disabled=true; log("⚠️ Verbindung verloren.","text-rose-400"); if(state.screen==="play"&&running) pauseGame(); if(state.autoReconnect&&state.device){ reconnect(); } else { setStatus("off"); btnConnect.innerHTML="<span>🔗</span> "+tr("b_connect"); btnConnect.classList.add("pulse"); } }
+async function reconnect(){ if(state.reconnecting||!state.device) return; state.reconnecting=true; setStatus("scan"); btnConnect.classList.remove("pulse"); btnConnect.innerHTML="<span>↻</span> Verbinde…"; var delay=800;
+  while(state.autoReconnect&&!state.connected){ try{ state.server=await state.device.gatt.connect(); state.connected=true; setStatus("on"); btnConnect.innerHTML="<span>✅</span> "+tr("b_connected"); btnCalibrate.disabled=false; await scanAllServices(); await subscribeAll(); log("✅ Wieder verbunden.","text-emerald-300"); flash("Wieder verbunden ✓"); break; }
+    catch(e){ await new Promise(function(r){ setTimeout(r,delay); }); delay=Math.min(10000,Math.round(delay*1.7)); } }
+  state.reconnecting=false; }
+async function tryAutoConnect(){ try{ if(navigator.bluetooth&&navigator.bluetooth.getDevices){ var ds=await navigator.bluetooth.getDevices(); if(ds&&ds.length){ state.device=ds[0]; state.autoReconnect=true; state.device.addEventListener("gattserverdisconnected",onDisconnected); log("Bekanntes Gerät: "+(state.device.name||"(ohne Namen)")+" — verbinde automatisch, sobald es sendet…","text-sky-300"); if(state.device.watchAdvertisements){ state.device.addEventListener("advertisementreceived",function(){ if(!state.connected&&!state.reconnecting) reconnect(); }); try{ await state.device.watchAdvertisements(); }catch(e){} } else { reconnect(); } } } }catch(e){} }
 async function scanAllServices(){
   if(!state.server){ log("Kein Server.","text-rose-400"); return; }
   gattTree.innerHTML=""; log("📡 Scanne Services…","text-sky-300"); let services=[];
@@ -257,11 +262,11 @@ async function scanAllServices(){
 }
 async function subscribeAll(){ if(!state.server) return; let count=0,services=[]; try{ services=await state.server.getPrimaryServices(); }catch(_){}
   for(const svc of services){ let chars=[]; try{ chars=await svc.getCharacteristics(); }catch(_){ continue; }
-    for(const c of chars){ if(c.properties.notify||c.properties.indicate){ try{ await c.startNotifications(); c.addEventListener("characteristicvaluechanged",onValueChanged); state.notifyChars.push(c); count++; if(CONFIG.DATA_CHARACTERISTIC_UUID && c.uuid.toLowerCase()===CONFIG.DATA_CHARACTERISTIC_UUID.toLowerCase()) setActive(c,svc); }catch(e){} } } }
+    for(const c of chars){ if(c.properties.notify||c.properties.indicate){ try{ await c.startNotifications(); c.addEventListener("characteristicvaluechanged",onValueChanged); state.notifyChars.push(c); count++; if((state.activeUuid&&c.uuid===state.activeUuid)||(CONFIG.DATA_CHARACTERISTIC_UUID&&c.uuid.toLowerCase()===CONFIG.DATA_CHARACTERISTIC_UUID.toLowerCase())) setActive(c,svc); }catch(e){} } } }
   log("🔔 "+count+" Notify-Characteristic(s) abonniert. Kippe die Disc!","text-indigo-300");
   if(!state.activeChar && state.notifyChars.length===1) setActive(state.notifyChars[0]);
 }
-function setActive(c,svc){ state.activeChar=c; activeSource.textContent=(svc?svc.uuid+" › ":"")+c.uuid; log("🎯 Aktive Datenquelle: "+c.uuid,"text-emerald-300"); }
+function setActive(c,svc){ state.activeChar=c; state.activeUuid=c.uuid; activeSource.textContent=(svc?svc.uuid+" › ":"")+c.uuid; log("🎯 Aktive Datenquelle: "+c.uuid,"text-emerald-300"); }
 function onValueChanged(ev){ const dv=ev.target.value,uuid=ev.target.uuid,now=performance.now(); ev.target.__l=ev.target.__l||0; if(now-ev.target.__l>90){ ev.target.__l=now; log(uuid.slice(4,8)+" ▸ "+($("logHex").checked?bytesToHex(dv):bytesToDec(dv)),"text-emerald-300"); } if(!state.activeChar){ state.activeChar=ev.target; activeSource.textContent=uuid; } if(ev.target!==state.activeChar) return; const p=parseValues(dv); state.rawX=p.x; state.rawY=p.y; updateAxes(); }
 function parseValues(dv){ const n=dv.byteLength; let x=0,y=0; try{ if(CONFIG.PARSE_MODE==="int16le"&&n>=4){x=dv.getInt16(0,true);y=dv.getInt16(2,true);} else if(CONFIG.PARSE_MODE==="int8"&&n>=2){x=dv.getInt8(0);y=dv.getInt8(1);} else if(CONFIG.PARSE_MODE==="uint8"&&n>=2){x=dv.getUint8(0)-128;y=dv.getUint8(1)-128;} else { if(n>=4){x=dv.getInt16(0,true);y=dv.getInt16(2,true);} else if(n>=2){x=dv.getInt8(0);y=dv.getInt8(1);} else if(n===1){x=dv.getInt8(0);} } }catch(e){} return {x,y}; }
 
@@ -505,16 +510,16 @@ let selIdx=16; // Murmel-Labyrinth
 /* ===== 11. VIEWS / FLOW ===== */
 function showView(v){ state.screen=v; ["viewHome","viewDetail","viewPlay","viewEnd"].forEach(id=>$(id).classList.toggle("hidden",id!=="view"+v.charAt(0).toUpperCase()+v.slice(1))); }
 function openDetail(i){ selIdx=i; CUR=GAMES[i]; $("dGameIcon").textContent=CUR.icon||"🎮"; $("dGameName").textContent=(i+1)+". "+gname(CUR); $("dGameTag").textContent=CUR.eign+" · "+ginfo(CUR)+" · "+(LANG==="en"?"Axis: ":"Achse: ")+CUR.axis;
-  $("dGoal").textContent=goalT(CUR.cat)||ginfo(CUR); $("dHow").textContent=howT(CUR.cat)||"Mit sanftem Kippen steuern.";
+  $("dGoal").textContent=goalT(CUR.cat)||ginfo(CUR); $("dHow").textContent=moveText(CUR);
   $("dWarn").classList.toggle("hidden", state.calibrated); $("dConnWarn").classList.toggle("hidden", state.connected||state.demo);
-  showView("detail"); }
+  resetPractice(); showView("detail"); }
 async function startPlay(){ if(!state.connected&&!state.demo){ $("dConnWarn").classList.remove("hidden"); return; }
   showView("play"); await goFullscreen(); await keepAwake(); resize(); checkPortrait();
   $("pauseOverlay").classList.add("hidden"); $("calmBanner").classList.add("hidden");
   // 3-2-1 Countdown, dann Kalibrierung + Spielstart
   const box=$("countdown"),num=$("countNum"); box.classList.remove("hidden"); num.textContent=3; let i=3;
   countdownIv=setInterval(()=>{ i--; if(i<=0){ clearInterval(countdownIv); countdownIv=null; box.classList.add("hidden"); calibrate(); beginSession(); } else num.textContent=i; },1000); }
-function beginSession(){ resize(); particles=[]; diffReset(); session=freshSession(); session.game=CUR.name; session.start=Date.now(); CUR.init(); running=true; paused=false; log("▶️ Start: "+CUR.name,"text-emerald-300"); }
+function beginSession(){ resize(); particles=[]; diffReset(); session=freshSession(); session.game=CUR.name; session.start=Date.now(); CUR.init(); running=true; paused=false; var sh=$("startHint"); if(sh){ sh.textContent=moveText(CUR); sh.classList.remove("hidden"); clearTimeout(window.__shT); window.__shT=setTimeout(function(){ sh.classList.add("hidden"); },6000); } log("▶️ Start: "+CUR.name,"text-emerald-300"); }
 function pauseGame(){ if(!running) return; paused=true; session._pStart=Date.now(); $("pauseOverlay").classList.remove("hidden"); }
 function resumeGame(){ if(session._pStart){ session.pausedMs+=Date.now()-session._pStart; session._pStart=0; } paused=false; $("pauseOverlay").classList.add("hidden"); }
 function abortGame(){ stopGame(); }
@@ -537,7 +542,7 @@ function loop(ts){ const dt=Math.min(0.05,(ts-lastTS)/1000); lastTS=ts; if(state
     try{ CUR.render(); }catch(e){ console.error(e); onGameError(e); } updateParticles(dt); drawParticles();
     $("hudScore").textContent=Math.floor(session.score); $("hudLevel").textContent=level; $("hudTime").textContent=fmtTime(sessElapsed()); }
   else if(state.screen==="play"&&CUR){ try{ CUR.render(); }catch(e){ bg(); } drawParticles(); }
-  if(state.screen==="home") updateCalCheck();
+  if(state.screen==="home") updateCalCheck(); else if(state.screen==="detail") updatePractice();
   requestAnimationFrame(loop); }
 function checkCalm(){ if(!state.safety){ $("calmBanner").classList.add("hidden"); return; } const v=session.velWindow.reduce((a,b)=>a+b,0)/(session.velWindow.length||1); $("calmBanner").classList.toggle("hidden", !(v>0.06)); }
 function updateCalCheck(){ const d=$("calDot"),t=$("calText"); const live=(state.connected||state.demo)&&(performance.now()-state.lastData<1500);
@@ -592,7 +597,7 @@ if($("reMenu")){ $("reMenu").onclick=function(){ $("renderError").classList.add(
 /* ===== i18n DE/EN ===== */
 const I18N={de:{"subtitle": "30 Spiele · MFT Challenge Disc 2.0", "b_connect": "Disc verbinden", "b_connected": "Verbunden", "b_demo": "Demo-Modus", "b_demo_on": "Demo aktiv", "b_calib": "🎯 Nullpunkt kalibrieren", "b_report": "📊 Berichte", "b_debug": "🛠️ Debug", "h_choose": "Spiel wählen", "h_live": "Live-Auswertung (Therapeut)", "l_damp": "Dämpfung", "l_sens": "Empfindlichkeit", "l_pace": "Grund-Tempo", "l_invx": "X spiegeln", "l_invy": "Y spiegeln", "l_auto": "Auto-Schwierigkeit", "l_calm": "Beruhigungs-Hilfe", "d_goal": "Therapie-Ziel:", "d_how": "So geht's:", "d_steer": "Steuerung:", "d_steertext": "sanftes Kippen — links/rechts und vor/zurück.", "d_back": "← Zurück", "d_start": "▶️ Start", "p_pause": "⏸ Pause", "p_abort": "✕ Abbrechen", "p_paused": "⏸ Pause", "p_resume": "▶️ Fortsetzen", "p_end": "Beenden", "cd_title": "🎯 Kalibrierung — ruhig in der Mitte stehen", "portrait": "📱 Quer halten für mehr Platz", "calm": "🌬️ Ruhig atmen — langsame, kontrollierte Bewegungen.", "e_done": "Geschafft!", "e_again": "🔁 Nochmal", "e_other": "🎮 Anderes Spiel", "e_report": "📊 Bericht", "re_title": "Anzeigeproblem", "re_text": "Das Spiel konnte nicht dargestellt werden.", "re_retry": "Neu starten", "re_menu": "Zur Auswahl", "conn_none": "Noch keine Verbindung — verbinde die Disc oder starte den Demo-Modus.", "conn_wait": "Warte auf Bewegungsdaten… Disc kippen bzw. (Demo) Maus über dem Feld bewegen.", "conn_react": "Disc reagiert ✓", "conn_ready": "kalibriert. Wähle ein Spiel.", "conn_calib": "jetzt „Nullpunkt kalibrieren“ drücken (ruhig stehen)."},en:{"subtitle": "30 Games · MFT Challenge Disc 2.0", "b_connect": "Connect disc", "b_connected": "Connected", "b_demo": "Demo mode", "b_demo_on": "Demo on", "b_calib": "🎯 Calibrate zero", "b_report": "📊 Reports", "b_debug": "🛠️ Debug", "h_choose": "Choose a game", "h_live": "Live analysis (therapist)", "l_damp": "Damping", "l_sens": "Sensitivity", "l_pace": "Base speed", "l_invx": "Mirror X", "l_invy": "Mirror Y", "l_auto": "Auto difficulty", "l_calm": "Calm assist", "d_goal": "Therapy goal:", "d_how": "How to play:", "d_steer": "Controls:", "d_steertext": "gentle tilting — left/right and forward/back.", "d_back": "← Back", "d_start": "▶️ Start", "p_pause": "⏸ Pause", "p_abort": "✕ Stop", "p_paused": "⏸ Paused", "p_resume": "▶️ Resume", "p_end": "Finish", "cd_title": "🎯 Calibration — stand still in the centre", "portrait": "📱 Turn landscape for more space", "calm": "🌬️ Breathe calmly — slow, controlled movements.", "e_done": "Well done!", "e_again": "🔁 Again", "e_other": "🎮 Other game", "e_report": "📊 Report", "re_title": "Display problem", "re_text": "The game could not be displayed.", "re_retry": "Restart", "re_menu": "To menu", "conn_none": "No connection — connect the disc or start demo mode.", "conn_wait": "Waiting for motion data… tilt the disc, or (demo) move the mouse over the field.", "conn_react": "Disc responding ✓", "conn_ready": "calibrated. Choose a game.", "conn_calib": "now press “Calibrate zero” (stand still)."}};
 const NAME_EN={"Elfmeter (11 m)": "Penalty Kick", "Torwart halten": "Goalkeeper", "Basketball-Freiwurf": "Basketball Free Throw", "Bogenschießen": "Archery", "Bowling": "Bowling", "Curling": "Curling", "Tischtennis": "Table Tennis", "Tennis": "Tennis", "Air Hockey": "Air Hockey", "Breakout": "Breakout", "Squash": "Squash", "Volleyball-Pritschen": "Volleyball Bump", "Ski-Slalom": "Ski Slalom", "Autorennen": "Car Race", "Kajak / Wildwasser": "Kayak / Rapids", "Snowboard": "Snowboard", "Murmel-Labyrinth": "Marble Maze", "Heißluftballon": "Hot-Air Balloon", "Höhlen-Flug": "Cave Flight", "Kugel auf Schiene": "Ball on Rail", "Obst fangen": "Catch Fruit", "Sterne in Ecken": "Stars in Corners", "Schatzsuche": "Treasure Hunt", "Angeln": "Fishing", "Aquarium füttern": "Feed Aquarium", "Zen-Garten": "Zen Garden", "Atem-Surfer": "Breath Surfer", "Sortieren": "Sorting", "Rechnen-Quiz": "Math Quiz", "Memory-Pfad (Simon)": "Memory Path (Simon)"}, INFO_EN={"Zielen + Halten, Keeper": "Aim + hold, keeper", "Ball blocken": "Block the ball", "Bogen dosieren": "Control the arc", "Ruhig zielen": "Aim calmly", "Aim + Wurf": "Aim + throw", "Sehr dosiert": "Very controlled", "Tracking + Reaktion": "Tracking + reaction", "Positionieren": "Positioning", "Schnelle ML-Wechsel": "Fast L/R changes", "Gleichmäßige ML-Kontrolle": "Smooth L/R control", "Wand-Rückschlag": "Wall rebound", "Ball aufhalten": "Keep ball up", "Tore durchfahren": "Pass the gates", "Spur halten": "Stay in lane", "Felsen ausweichen": "Dodge rocks", "Carven L/R": "Carve L/R", "Feinste 2-Achsen-Kontrolle": "Finest 2-axis control", "Korridor halten": "Hold the corridor", "Enge Passagen": "Narrow passages", "Reine Stabilität": "Pure stability", "ML-Verlagerung": "L/R weight shift", "Endgrad in alle Richtungen": "End-range in all directions", "Heiß/Kalt erkunden": "Hot/cold exploring", "Boot + Tiefe": "Boat + depth", "Weiche 2D-Führung": "Soft 2D guiding", "In passende Ecke verlagern": "Shift to matching corner", "Dual-Task: Antwort ansteuern": "Dual-task: steer to answer", "Linie nachzeichnen": "Trace the line", "Welle im Atemrhythmus": "Wave with breathing", "Richtungs-Sequenz merken": "Remember direction sequence"}, GOAL_EN={"A": "Aiming accuracy, controlled weight shifting and steady holding (end-range control).", "B": "Reaction and lateral (mediolateral) weight shifting.", "C": "Continuous steering and rhythmic weight shifting.", "D": "Lateral weight shifting and reaction.", "E": "Reaching the limits of motion (ROM) in all directions, partly with cognition.", "F": "Very gentle, controlled movement, balance and mindfulness."}, HOW_EN={"A": "Aim with gentle tilting, then hold still in the centre — it triggers when the gauge is full.", "B": "Move the paddle left/right and keep the ball in play.", "C": "Steer with left/right (speed with forward/back) through the course.", "D": "Move the basket with left/right — catch good items, avoid hazards.", "E": "Guide the figure to the target by tilting and hold briefly.", "F": "Follow the dot or wave calmly and slowly."}, STAT_EN={"Punkte": "Points", "Zeit": "Time", "Balance": "Balance", "Stabilität": "Stability", "Dauer": "Duration", "Level": "Level", "Heilung": "Healing"};
-let LANG=(function(){try{return localStorage.getItem('bf_lang')||'de';}catch(e){return 'de';}})();
+let LANG='de';
 function tr(k){ return (I18N[LANG]&&I18N[LANG][k])||I18N.de[k]||k; }
 function gname(g){ return (LANG==='en'&&NAME_EN[g.name])?NAME_EN[g.name]:g.name; }
 function ginfo(g){ return (LANG==='en'&&INFO_EN[g.info])?INFO_EN[g.info]:g.info; }
@@ -606,8 +611,30 @@ let _ip=null;
 window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); _ip=e; var b=$("btnInstall"); if(b) b.classList.remove("hidden"); });
 window.addEventListener("appinstalled",function(){ var b=$("btnInstall"); if(b) b.classList.add("hidden"); });
 if($("btnInstall")) $("btnInstall").onclick=async function(){ if(_ip){ _ip.prompt(); try{ await _ip.userChoice; }catch(e){} _ip=null; $("btnInstall").classList.add("hidden"); } else { alert("So installierst du Balance Flow:\n\niPad (Bluefy): in Bluefy als Lesezeichen speichern (Stern-Symbol) — dann beim Start einfach antippen. Web Bluetooth laeuft nur in Bluefy, nicht ueber ein Safari-Home-Icon.\n\nAndroid/Chrome: Menue (drei Punkte) -> App installieren.\n\nDesktop-Chrome/Edge: Installier-Symbol rechts in der Adresszeile."); } };
+function moveText(g){ var n=g.name||"";
+ if(n.indexOf("Simon")>=0) return "In die gezeigte Richtung lehnen — links, rechts, vorne oder hinten — in der richtigen Reihenfolge.";
+ if(n.indexOf("Labyrinth")>=0||n.indexOf("Schiene")>=0) return "In alle Richtungen kippen — die Kugel rollt in die Kipprichtung.";
+ switch(g.cat){
+  case "A": return "Sanft nach links/rechts kippen, um zu zielen. Dann ruhig in der Mitte halten — es löst automatisch aus.";
+  case "B": return "Nach links/rechts kippen, um den Schläger zu bewegen und den Ball zurückzuspielen.";
+  case "C": return g.axis==="X" ? "Nach links/rechts kippen, um zu lenken." : "Nach links/rechts lenken; nach vorne/hinten Höhe bzw. Tempo steuern.";
+  case "D": return "Nach links/rechts kippen, um den Korb zu bewegen — Gutes fangen, Hindernisse meiden.";
+  case "E": return "In alle Richtungen kippen (links/rechts und vorne/hinten), um die Figur zum Ziel zu führen, und kurz dort halten.";
+  case "F": return g.axis==="Y" ? "Nach vorne/hinten kippen, um der Welle zu folgen." : "In alle Richtungen kippen, um dem leuchtenden Punkt zu folgen.";
+  default: return "Mit sanftem Kippen steuern — links/rechts und vorne/hinten.";
+ } }
+/* ===== Lernmodus / Übungsfeld ===== */
+var practiceHits={L:0,R:0,F:0,B:0};
+function resetPractice(){ practiceHits={L:0,R:0,F:0,B:0}; ["practiceL","practiceR","practiceTop","practiceBot"].forEach(function(id){ var e=$(id); if(e){ e.classList.remove("text-emerald-600","font-bold"); e.classList.add("text-slate-400"); } }); var m=$("practiceMsg"); if(m) m.textContent=""; }
+function pmark(id,k){ if(!practiceHits[k]){ practiceHits[k]=1; var e=$(id); if(e){ e.classList.remove("text-slate-400"); e.classList.add("text-emerald-600","font-bold"); } } }
+function updatePractice(){ var dot=$("practiceDot"); if(!dot) return; var nx=state.smoothX,ny=state.smoothY; dot.style.left=(50+nx*42)+"%"; dot.style.top=(50-ny*42)+"%";
+  if(nx<-0.4) pmark("practiceL","L"); if(nx>0.4) pmark("practiceR","R"); if(ny>0.4) pmark("practiceTop","F"); if(ny<-0.4) pmark("practiceBot","B");
+  var need=(CUR&&CUR.axis==="X")?["L","R"]:(CUR&&CUR.axis==="Y")?["F","B"]:["L","R","F","B"];
+  var ok=need.every(function(k){ return practiceHits[k]; }); var m=$("practiceMsg"); if(m) m.textContent= ok ? "Super – bereit! Jetzt auf Start tippen." : "";
+}
+var _pb=$("practiceBox"); if(_pb){ _pb.addEventListener("pointermove",function(e){ if(!state.demo) return; var r=_pb.getBoundingClientRect(); demoInput.ptr=true; demoInput.x=clamp(((e.clientX-r.left)/r.width-0.5)*2,-1,1); demoInput.y=clamp(-((e.clientY-r.top)/r.height-0.5)*2,-1,1); }); }
 /* ===== 16. START ===== */
-window.addEventListener("load",()=>{ setStatus("off"); buildMenu(); applyLang(); requestAnimationFrame(loop); });
+window.addEventListener("load",()=>{ setStatus("off"); buildMenu(); applyLang(); tryAutoConnect(); requestAnimationFrame(loop); });
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
 </body>
